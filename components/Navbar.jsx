@@ -1,6 +1,8 @@
 "use client";
+import { assets } from "@/assets/assets";
 import { useClerk, UserButton, useUser } from "@clerk/nextjs";
 import { PackageIcon, Search, ShoppingBag, ShoppingCart } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -27,8 +29,13 @@ const Navbar = () => {
             href="/"
             className="relative text-4xl font-semibold text-slate-700"
           >
-            <span className="text-green-600">go</span>cart
-            <span className="text-green-600 text-5xl leading-0">.</span>
+            <Image
+              className="rounded-md"
+              src={assets.logo}
+              width={150}
+              height={150}
+            />
+
             <p className="absolute text-xs font-semibold -top-1 -right-8 px-3 p-0.5 rounded-full flex items-center gap-2 text-white bg-green-500">
               plus
             </p>
@@ -97,6 +104,15 @@ const Navbar = () => {
               </button>
             ) : (
               <div>
+                {/* <UserButton>
+                  <UserButton.MenuItems>
+                    <UserButton.Action
+                      labelIcon={<ShoppingBag size={16} />}
+                      label="Carts"
+                      onClick={() => router.push("/cart")}
+                    />
+                  </UserButton.MenuItems>
+                </UserButton> */}
                 <UserButton>
                   <UserButton.MenuItems>
                     <UserButton.Action
@@ -105,8 +121,6 @@ const Navbar = () => {
                       onClick={() => router.push("/cart")}
                     />
                   </UserButton.MenuItems>
-                </UserButton>
-                <UserButton>
                   <UserButton.MenuItems>
                     <UserButton.Action
                       labelIcon={<PackageIcon size={16} />}
