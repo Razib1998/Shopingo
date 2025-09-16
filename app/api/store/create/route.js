@@ -18,12 +18,12 @@ export async function POST(request) {
     const image = formData.get("image");
     if (
       !name ||
-      username ||
-      description ||
-      email ||
-      contact ||
-      address ||
-      image
+      !username ||
+      !description ||
+      !email ||
+      !contact ||
+      !address ||
+      !image
     ) {
       return NextResponse.json(
         {
@@ -42,7 +42,7 @@ export async function POST(request) {
     }
     // check is userName Already taken
     const isUserNameExists = await prisma.store.findFirst({
-      where: { username: username.lowerCase() },
+      where: { username: username.toLowerCase() },
     });
     if (isUserNameExists) {
       return NextResponse.json(
@@ -79,7 +79,7 @@ export async function POST(request) {
         email,
         contact,
         address,
-        image: optimizedImage,
+        logo: optimizedImage,
       },
     });
 
@@ -104,13 +104,15 @@ export async function POST(request) {
 
 export async function GET(request) {
   try {
-    const { userId } = getAuth();
+    const { userId } = getAuth(request);
+    if (!userId)
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const isStoreRegistered = await prisma.store.findFirst({
       where: { userId: userId },
     });
     if (isStoreRegistered) {
-      return NextResponse.json({ status: store.status });
+      return NextResponse.json({ status: isStoreRegistered.status });
     }
     return NextResponse.json({ status: "Not Registered" });
   } catch (error) {
