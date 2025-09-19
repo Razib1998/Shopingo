@@ -11,7 +11,7 @@ export async function POST(request) {
     if (!isAdmin) {
       return NextResponse.json({ error: "Not Authorized" }, { status: 401 });
     }
-    const { storeId, status } = await req.json();
+    const { storeId, status } = await request.json();
     if (status === "approved") {
       await prisma.store.update({
         where: { id: storeId },

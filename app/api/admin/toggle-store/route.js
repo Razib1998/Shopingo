@@ -11,7 +11,7 @@ export async function POST(request) {
     if (!isAdmin) {
       return NextResponse.json({ error: "Not Authorized" }, { status: 401 });
     }
-    const { storeId } = await req.json();
+    const { storeId } = await request.json();
     if (!storeId) {
       return NextResponse.json({ error: "Missing StoreId" }, { status: 400 });
     }
@@ -26,7 +26,7 @@ export async function POST(request) {
       where: { id: storeId },
       data: { isActive: !store.isActive },
     });
-    return NextResponse.json({ message: "Store Updated Successfully" });
+    return NextResponse.json({ message: "Store Status Updated Successfully" });
   } catch (error) {
     console.error(error);
     return NextResponse.json(
