@@ -1,23 +1,61 @@
 "use client";
 
 import { assets } from "@/assets/assets";
-import { useClerk, UserButton, useUser } from "@clerk/nextjs";
-import { Menu, X, Search, ShoppingCart, PackageIcon } from "lucide-react";
+import { useClerk, UserButton, useUser, useAuth } from "@clerk/nextjs";
+import {
+  Menu,
+  X,
+  Search,
+  ShoppingCart,
+  PackageIcon,
+  LayoutDashboard,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import axios from "axios";
 
 const Navbar = () => {
   const router = useRouter();
-  const { user } = useUser();
   const { openSignIn } = useClerk();
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
   const cartCount = useSelector((state) => state.cart.total);
+
+  // admin gate
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loadingAdmin, setLoadingAdmin] = useState(true);
+
+  const { user } = useUser();
+  const { getToken } = useAuth();
+
+  const fetchIsAdmin = async () => {
+    try {
+      const token = await getToken();
+      const { data } = await axios.get("/api/admin/is-admin", {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+      setIsAdmin(Boolean(data?.isAdmin));
+    } catch (error) {
+      console.error(error);
+      setIsAdmin(false);
+    } finally {
+      setLoadingAdmin(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user) fetchIsAdmin();
+    else {
+      setIsAdmin(false);
+      setLoadingAdmin(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -54,9 +92,8 @@ const Navbar = () => {
               </Link>
             </div>
 
-            {/* Right: collapsible search (left of profile) + profile/login */}
+            {/* Right: collapsible search + profile/login */}
             <div className="flex items-center gap-2">
-              {/* Collapsible search field */}
               <form
                 onSubmit={handleSearchSubmit}
                 className={[
@@ -79,7 +116,6 @@ const Navbar = () => {
                 />
               </form>
 
-              {/* Toggle button for search */}
               <button
                 aria-label="Toggle search"
                 onClick={() => setSearchOpen((s) => !s)}
@@ -88,9 +124,27 @@ const Navbar = () => {
                 <Search size={20} />
               </button>
 
-              {/* Profile / Login */}
               {user ? (
-                <UserButton />
+                <UserButton>
+                  <UserButton.MenuItems>
+                    {!isAdmin && (
+                      <UserButton.Action
+                        labelIcon={<PackageIcon size={16} />}
+                        label="My Orders"
+                        onClick={() => router.push("/orders")}
+                      />
+                    )}
+
+                    {/* Admin Dashboard item */}
+                    {!loadingAdmin && isAdmin && (
+                      <UserButton.Action
+                        labelIcon={<LayoutDashboard size={16} />}
+                        label="Dashboard"
+                        onClick={() => router.push("/admin")}
+                      />
+                    )}
+                  </UserButton.MenuItems>
+                </UserButton>
               ) : (
                 <button
                   onClick={openSignIn}
@@ -185,7 +239,7 @@ const Navbar = () => {
         </div>
       </aside>
 
-      {/* DESKTOP HEADER (unchanged but simple) */}
+      {/* DESKTOP HEADER */}
       <div className="hidden sm:block bg-white">
         <div className="mx-6">
           <div className="flex items-center justify-between max-w-7xl mx-auto py-4">
@@ -236,11 +290,22 @@ const Navbar = () => {
               {user ? (
                 <UserButton>
                   <UserButton.MenuItems>
-                    <UserButton.Action
-                      labelIcon={<PackageIcon size={16} />}
-                      label="My Orders"
-                      onClick={() => router.push("/orders")}
-                    />
+                    {!isAdmin && (
+                      <UserButton.Action
+                        labelIcon={<PackageIcon size={16} />}
+                        label="My Orders"
+                        onClick={() => router.push("/orders")}
+                      />
+                    )}
+
+                    {/* Admin Dashboard item */}
+                    {!loadingAdmin && isAdmin && (
+                      <UserButton.Action
+                        labelIcon={<LayoutDashboard size={16} />}
+                        label="Dashboard"
+                        onClick={() => router.push("/admin")}
+                      />
+                    )}
                   </UserButton.MenuItems>
                 </UserButton>
               ) : (
