@@ -15,6 +15,12 @@ export async function GET(request) {
     // Get total shop in our app
     const stores = await prisma.store.count();
 
+    // Get all Active store
+
+    const activeStores = await prisma.store.findMany({
+      where: { isActive: true },
+    });
+
     //Get total revenue
     const aLLOrders = await prisma.order.findMany({
       select: {
@@ -35,6 +41,7 @@ export async function GET(request) {
     const dashboardData = {
       orders,
       stores,
+      activeStores: activeStores.length,
       products,
       revenue,
       aLLOrders,
